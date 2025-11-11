@@ -1,14 +1,18 @@
-// Import the functions you need from the SDKs you need
-import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+// FirebaseConfig.ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initializeApp } from "firebase/app";
-import { getReactNativePersistence, initializeAuth } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  getAuth,
+  initializeAuth,
+  setPersistence
+} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { Platform } from "react-native";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// ถ้าใช้ polyfill RN persistence ของคุณ
+import { getReactNativePersistence } from "./reactNativePersistence";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,13 +20,22 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-export const auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-});
+
+export const auth =
+  Platform.OS === "web"
+    ? getAuth(app) // เว็บ: ใช้ Web SDK ปกติ
+    : initializeAuth(app, {
+        persistence: getReactNativePersistence(AsyncStorage), // มือถือ: RN persistence
+      });
+
+// (ถ้าต้องการ persistence แบบคงอยู่บนเว็บ)
+if (Platform.OS === "web") {
+  // ทำเป็น async/await ได้ในที่ที่คุณ init แอป
+  setPersistence(auth, browserLocalPersistence).catch(console.warn);
+}
+
 export const db = getFirestore(app);
