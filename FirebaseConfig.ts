@@ -1,17 +1,9 @@
-// FirebaseConfig.ts
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initializeApp } from "firebase/app";
-import {
-  browserLocalPersistence,
-  getAuth,
-  initializeAuth,
-  setPersistence
-} from "firebase/auth";
+import { browserLocalPersistence, getAuth, initializeAuth, setPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { Platform } from "react-native";
-
-// ถ้าใช้ polyfill RN persistence ของคุณ
-import { getReactNativePersistence } from "./reactNativePersistence";
+import { ReactNativePersistence } from "./reactNativePersistence";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -25,17 +17,19 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 
-export const auth =
-  Platform.OS === "web"
-    ? getAuth(app) // เว็บ: ใช้ Web SDK ปกติ
-    : initializeAuth(app, {
-        persistence: getReactNativePersistence(AsyncStorage), // มือถือ: RN persistence
-      });
 
-// (ถ้าต้องการ persistence แบบคงอยู่บนเว็บ)
+let _auth = getAuth(app);
 if (Platform.OS === "web") {
-  // ทำเป็น async/await ได้ในที่ที่คุณ init แอป
-  setPersistence(auth, browserLocalPersistence).catch(console.warn);
+  setPersistence(_auth, browserLocalPersistence).catch(() => {});
+} else {
+  try {
+    _auth = initializeAuth(app, {
+      persistence: new ReactNativePersistence(AsyncStorage),
+    });
+  } catch {
+    _auth = getAuth(app);
+  }
 }
 
+export const auth = _auth;
 export const db = getFirestore(app);

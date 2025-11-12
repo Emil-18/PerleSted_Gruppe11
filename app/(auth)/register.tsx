@@ -12,87 +12,84 @@ import { auth, db } from "../../FirebaseConfig";
 import { styles } from "../styles";
 
 import {
-  collection,
   doc,
-  getDocs,
-  query,
-  setDoc,
-  where,
+  getDoc,
+  runTransaction,
+  serverTimestamp,
 } from "firebase/firestore";
-
-const userData = collection(db, "users");
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [isLoading, setIsLoading] = useState(false);
 
-  const usernameRef = useRef(null);
-  const emailRef = useRef(null);
+  const usernameRef = useRef<TextInput | null>(null);
+  const emailRef = useRef<TextInput | null>(null);
 
-  const addUserFirestore = async (
-    uid: string,
-    username: string,
-    email: string
-  ) => {
-    await setDoc(doc(db, "users", uid), {
-      username: username,
-      email: email,
-    });
-  };
-
-  const checkUsernameAvailability = async (username: string) => {
-    const usernameQuery = query(userData, where("username", "==", username));
-    const names = await getDocs(usernameQuery);
-
-    return names.empty;
-  };
-
-  const checkEmailAvailability = async (email: string) => {
-    const emailQuery = query(userData, where("email", "==", email));
-    const emails = await getDocs(emailQuery);
-
-    return emails.empty;
-  };
+  const normalizeUsername = (name: string) =>
+    name.trim().toLowerCase();
 
   const handleRegister = async () => {
     if (isLoading) return;
 
+    const uname = normalizeUsername(username);
+
+    if (!uname || uname.length < 3 || uname.length > 20) {
+      alert("Brukernavn må være 3–20 tegn.");
+      return;
+    }
+    if (!/^[a-z0-9_]+$/.test(uname)) {
+      alert("Brukernavn kan bare inneholde a–z, 0–9 og _.");
+      return;
+    }
     if (password !== confirmPassword) {
       alert("Passordene er ikke like.");
       return;
     }
 
     setIsLoading(true);
-
     try {
-      if (!(await checkUsernameAvailability(username))) {
+      const unameRef = doc(db, "usernames", uname);
+      const unameSnap = await getDoc(unameRef);
+      if (unameSnap.exists()) {
         alert("Brukernavnet er allerede tatt.");
-        setIsLoading(false);
         return;
       }
 
-      if (!(await checkEmailAvailability(email))) {
-        alert("Denne e-posten er allerede registrert.");
-        setIsLoading(false);
-        return;
-      }
-
-      const userTemp = await createUserWithEmailAndPassword(
+      const { user } = await createUserWithEmailAndPassword(
         auth,
-        email,
+        email.trim(),
         password
       );
-      if (userTemp.user) {
-        addUserFirestore(userTemp.user.uid, username, email);
-        router.replace("/(tabs)/home");
+
+      await runTransaction(db, async (tx) => {
+        const latestUnameSnap = await tx.get(unameRef);
+        if (latestUnameSnap.exists()) {
+          throw new Error("USERNAME_TAKEN");
+        }
+
+        const userRef = doc(db, "users", user.uid);
+        tx.set(unameRef, { uid: user.uid });
+        tx.set(userRef, {
+          email: user.email,
+          username: uname,
+          createdAt: serverTimestamp(),
+        });
+      });
+
+      router.replace("/(tabs)/home");
+    } catch (e: any) {
+      if (e?.code === "auth/email-already-in-use") {
+        alert("Denne e-posten er allerede registrert.");
+      } else if (e?.message === "USERNAME_TAKEN") {
+        alert("Brukernavnet er allerede tatt.");
+      } else {
+        console.log(e);
+        alert("Registrering feilet: " + (e?.message ?? "Ukjent feil"));
       }
-    } catch (error: any) {
-      console.log(error);
-      alert("Registrering feilet: " + error.message);
+    } finally {
       setIsLoading(false);
     }
   };
