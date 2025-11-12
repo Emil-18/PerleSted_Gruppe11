@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { DummyPearls } from "../../data/pearlsDummy";
+import { DummyPearls } from "../../../data/pearlsDummy";
 
 export default function PearlDetailScreen() {
   const router = useRouter();
