@@ -95,7 +95,7 @@ export const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     backgroundColor: "#fff",
-    // เงา
+    
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 4 },

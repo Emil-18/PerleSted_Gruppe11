@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 import React from "react";
 import { FlatList, StyleSheet, View } from "react-native";
-import { PearlCard } from "../../components/pearl/PearlCard";
-import { DummyPearls } from "../../data/pearlsDummy";
+import { PearlCard } from "../../../components/pearl/PearlCard";
+import { DummyPearls } from "../../../data/pearlsDummy";
 
 const Feed = () => {
   return (
@@ -18,7 +18,7 @@ const Feed = () => {
 
           onPress={() =>
             router.push({
-              pathname: "/[id]",
+              pathname: "/feed/[id]",
               params: { id: String(item.id) },
             })
           }
