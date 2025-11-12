@@ -28,7 +28,7 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
+        "expo-splash-screen",   
         {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
@@ -39,7 +39,15 @@
           }
         }
       
-      ]
+      ],
+      [
+        "expo-image-picker",
+      {
+        "photosPermission": "Allow $(PRODUCT_NAME) to access your photo",
+        "cameraPermission": "Allow §(PRODUCT NAME) to access your camera"
+      }
+    ]
+      
     ],
     "experiments": {
       "typedRoutes": true,
