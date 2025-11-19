@@ -6,6 +6,7 @@ import { SettingCard } from "../../components/settings/SettingCard";
 import image from "../../assets/beluga.png";
 import Button from "../../components/Button";
 import { styles } from "../styles";
+import { auth } from "../../FirebaseConfig";
 
 interface ProfileHeaderProps {
   imageUrl?: string;
@@ -19,10 +20,10 @@ interface ProfileHeaderProps {
 
 const dummyProfileData = {
   imageUrl: image,
-  username: "Katt",
-  verified: true,
+  username: auth.currentUser?.displayName,
+  verified: auth.currentUser?.emailVerified,
   phoneNumber: "12345678",
-  email: "katt@example.com",
+  email: auth.currentUser?.email,
   notifications: true,
   password: "hashedpassword",
 };
@@ -50,14 +51,14 @@ const Settings = ({
       />
       <SettingCard
         setting="Brukernavn"
-        settingInfo={username}
+        settingInfo={auth.currentUser?.displayName}
         btnText="Endre"
       />
       <SettingCard setting="Passord" settingInfo="********" btnText="Endre" />
-      <SettingCard setting="E-post" settingInfo={email} btnText="Endre" />
+      <SettingCard setting="E-post" settingInfo={auth.currentUser?.email} btnText="Endre" />
       <SettingCard
         setting="Telefonnummer"
-        settingInfo={phoneNumber}
+        settingInfo={auth.currentUser?.phoneNumber}
         btnText="Endre"
       />
       <SettingCard
