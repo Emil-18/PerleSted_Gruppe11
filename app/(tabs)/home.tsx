@@ -24,7 +24,7 @@ const home = () => {
       />
       <Button
         text="Innstillinger"
-        path="/usersettings"
+        path="/settings"
         buttonStyle={styles.profileButton}
         buttonTextStyle={styles.profileText}
       />

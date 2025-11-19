@@ -36,7 +36,8 @@ export default function LoginScreen() {
     try {
       const usern = await signInWithEmailAndPassword(auth, username, password);
       if (usern.user) {
-        router.replace("/(tabs)/home");
+          router.replace("/(tabs)/home");
+          
       }
     } catch (error: any) {
       console.log(error);
@@ -52,9 +53,9 @@ export default function LoginScreen() {
 
       <TextInput
         style={styles.authInput}
-        placeholder="Brukernavn"
+        placeholder="e-post"
         placeholderTextColor="#888888"
-        value={username}
+              value={ username}
         onChangeText={setUsername}
         autoCapitalize="none"
       />
