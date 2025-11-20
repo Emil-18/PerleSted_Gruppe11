@@ -1,5 +1,5 @@
 import { Link, router } from "expo-router";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -20,7 +20,8 @@ import {
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+    const [email, setEmail] = useState("");
+    const [ phone, setPhone ] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +63,8 @@ export default function RegisterScreen() {
         auth,
         email.trim(),
         password
-      );
+        );
+      
 
       await runTransaction(db, async (tx) => {
         const latestUnameSnap = await tx.get(unameRef);
@@ -79,7 +81,9 @@ export default function RegisterScreen() {
         });
       });
 
-      router.replace("/(tabs)/home");
+        router.replace("/(tabs)/home");
+        auth.currentUser.displayName = username;
+        auth.currentUser.phoneNumber = phone;
     } catch (e: any) {
       if (e?.code === "auth/email-already-in-use") {
         alert("Denne e-posten er allerede registrert.");
@@ -116,7 +120,15 @@ export default function RegisterScreen() {
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
-      />
+          />
+          <TextInput
+              placeholder="telefonnummer"
+              style={styles.authInput}
+              placeholderTextColor= "#888888"
+              keyboardType="number-pad"
+              maxLength="8"
+              onChangeText = {setPhone}
+          ></TextInput>
       <TextInput
         style={styles.authInput}
         placeholder="Passord"
