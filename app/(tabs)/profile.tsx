@@ -9,6 +9,7 @@ import { styles } from "../styles";
 
 import React from "react";
 import Button from "../../components/Button";
+import { auth } from "../../FirebaseConfig";
 
 interface ProfileProps {
   imageUrl?: string;
@@ -62,7 +63,7 @@ const Profile = ({
             source={typeof imageUrl === "string" ? { uri: imageUrl } : imageUrl}
             style={styles.profileImage}
           />
-          <Text style={styles.profileHeaderText}>{username}</Text>
+          <Text style={styles.profileHeaderText}>{auth.currentUser?.displayName}</Text>
           <Text style={styles.profileHeaderText}>
             {verified ? "Verifisert medlem" : "Uverifisert medlem"}
           </Text>
@@ -70,9 +71,9 @@ const Profile = ({
         <View style={styles.profileContainerMiddle}>
           <ProfileSettingCard
             setting="Telefonnummer"
-            settingInfo={phoneNumber}
+            settingInfo={auth.currentUser?.phoneNumber}
           />
-          <ProfileSettingCard setting="E-post" settingInfo={email} />
+          <ProfileSettingCard setting="E-post" settingInfo={auth.currentUser?.email} />
           <Button
             text="Endre instillinger"
             path="./settings"
