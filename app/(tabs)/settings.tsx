@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { Text, View } from "react-native";
+import { Switch, Text, TextInput, View } from "react-native";
 
 import { SettingCard } from "../../components/settings/SettingCard";
 
@@ -53,18 +53,21 @@ const Settings = ({
         setting="Brukernavn"
         settingInfo={auth.currentUser?.displayName}
         btnText="Endre"
+        settingComponent = <TextInput></TextInput>
       />
-      <SettingCard setting="Passord" settingInfo="********" btnText="Endre" />
-      <SettingCard setting="E-post" settingInfo={auth.currentUser?.email} btnText="Endre" />
+      <SettingCard setting="Passord" settingInfo="********" btnText="Endre" settingComponent = <TextInput keyboardType = "visible-password"></TextInput>/>
+      <SettingCard setting="E-post" settingInfo={auth.currentUser?.email} btnText="Endre" settingComponent = <TextInput keyboardType = "email-address"></TextInput>/>
       <SettingCard
         setting="Telefonnummer"
         settingInfo={auth.currentUser?.phoneNumber}
-        btnText="Endre"
+              btnText="Endre"
+        settingComponent = <TextInput keyboardType = "number-pad"></TextInput>
       />
       <SettingCard
         setting="Varsler"
         settingInfo={notifications ? "På" : "Av"}
         btnText="Endre"
+        settingComponent = <Switch></Switch>
       />
       <Text> </Text>
       <Button
