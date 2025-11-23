@@ -14,6 +14,7 @@ export const SettingCard = ({
   setting,
   settingInfo,
   btnText,
+  settingComponent,
   // route = "changesetting",
   path = "/usersettings",
 }: SettingCardProps) => {
@@ -22,13 +23,8 @@ export const SettingCard = ({
       <View style={styles.settingsTextContainer}>
         <Text style={styles.textBold}>{setting + ": "}</Text>
         <Text style={styles.text}>{settingInfo ? settingInfo : "ERROR"}</Text>
+        {settingComponent}
       </View>
-      <Button
-        text={btnText}
-        path={path}
-        buttonStyle={styles.settingsSmallButton}
-        buttonTextStyle={styles.text}
-      />
     </View>
   );
 };
