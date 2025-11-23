@@ -25,12 +25,6 @@ export const SettingCard = ({
         <Text style={styles.text}>{settingInfo ? settingInfo : "ERROR"}</Text>
         {settingComponent}
       </View>
-      <Button
-        text={btnText}
-        path={path}
-        buttonStyle={styles.settingsSmallButton}
-        buttonTextStyle={styles.text}
-      />
     </View>
   );
 };
