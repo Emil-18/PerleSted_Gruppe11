@@ -72,7 +72,7 @@ export default function LoginScreen() {
         style={styles.authButton}
         onPress={signIn}
               disabled={isLoading}
-        accessibilityRole = "button";
+        accessibilityRole = "button"
       >
         {isLoading ? (
           <ActivityIndicator />
