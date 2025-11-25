@@ -71,7 +71,8 @@ export default function LoginScreen() {
       <Pressable
         style={styles.authButton}
         onPress={signIn}
-        disabled={isLoading}
+              disabled={isLoading}
+        accessibilityRole = "button";
       >
         {isLoading ? (
           <ActivityIndicator />

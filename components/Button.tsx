@@ -21,7 +21,7 @@ export default function Button({
   };
 
   return (
-    <Pressable onPress={handlePress} style={buttonStyle}>
+    <Pressable onPress={handlePress} style={buttonStyle} accessibilityRole = "button">
       <Text style={buttonTextStyle}>{text}</Text>
     </Pressable>
   );

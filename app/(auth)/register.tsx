@@ -152,7 +152,8 @@ export default function RegisterScreen() {
       <Pressable
         style={styles.authButton}
         onPress={handleRegister}
-        disabled={isLoading}
+              disabled={isLoading}
+        accessibilityRole = "button";
       >
         {isLoading ? (
           <ActivityIndicator color="#FFFFFF" />

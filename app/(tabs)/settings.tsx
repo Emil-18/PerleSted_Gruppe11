@@ -119,7 +119,7 @@ const Settings = ({
         btnText="Endre"
               settingComponent=<Switch onValueChange={ setUserNotifications} value = {userNotifications}></Switch>
           />
-          <Pressable onPress={ onSave}><Text>lagre</Text></Pressable>
+          <Pressable onPress={ onSave} accessibilityRole = "button"><Text>lagre</Text></Pressable>
       <Button
         text="Logg ut"
         path=".././"
