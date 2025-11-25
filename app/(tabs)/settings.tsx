@@ -47,7 +47,7 @@ const Settings = ({
     const [phone, setPhone] = useState("");
     const [userNotifications, setUserNotifications] = useState(true);
     const onSave = function () {
-        //let infoToUpdate = {};
+        let infoToUpdate = {};
         //const unameRef = doc(db, "usernames", userName);
         //const unameSnap = getDoc(unameRef);
         
