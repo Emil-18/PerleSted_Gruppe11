@@ -51,11 +51,13 @@
           "cameraPermission": "Allow §(PRODUCT NAME) to access your camera"
         }
       ],
-      "expo-maps"
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    }
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
+        }
+      ]
+    ]
   }
 }
