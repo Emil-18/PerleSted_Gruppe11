@@ -9,7 +9,7 @@ import { styles } from "../styles";
 import { auth, db } from "../../FirebaseConfig";
 import { useState } from "react";
 import { updateCurrentUser, updatePassword, updatePhoneNumber, updateProfile } from "firebase/auth";
-import { doc, getDoc, runTransaction } from "firebase/firestore";
+import { Firestore, doc, getDoc, runTransaction } from "firebase/firestore";
 
 interface ProfileHeaderProps {
   imageUrl?: string;
@@ -46,7 +46,10 @@ const Settings = ({
     const [confirmPassword, setConfirmPassword] = useState("");
     const [phone, setPhone] = useState("");
     const [userNotifications, setUserNotifications] = useState(true);
+
     const onSave = function () {
+        console.log(doc(db, "users", username));
+        
         let infoToUpdate = {};
         //const unameRef = doc(db, "usernames", userName);
         //const unameSnap = getDoc(unameRef);
