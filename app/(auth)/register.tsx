@@ -85,8 +85,8 @@ export default function RegisterScreen() {
         //auth.currentUser.displayName = username;
         //auth.currentUser.phoneNumber = phone;
         //auth.currentUser.password = password;
-        updateProfile(user, { "displayName": uname, phoneNumber: phone, password: password, notifications: false});
-        //updatePhoneNumber(user, phone);
+        updateProfile(user, { "displayName": uname});
+        updatePhoneNumber(user, phone);
     } catch (e: any) {
       if (e?.code === "auth/email-already-in-use") {
         alert("Denne e-posten er allerede registrert.");
