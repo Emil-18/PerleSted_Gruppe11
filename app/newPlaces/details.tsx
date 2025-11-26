@@ -40,7 +40,7 @@ export default function NewPlaceDetails() {
     };
 
     Alert.alert("Post created", "Your new place has been created.");
-    router.replace("/(tabs)/feed");
+    router.replace("/feed/feed");
   };
 
   const cover = imageUris[0];

@@ -25,7 +25,7 @@ export default function NewPlaces() {
     });
   };
 
-
+  
   const requestPermissionsIfNeeded = useCallback(async () => {
     if (IS_WEB) return;
     try {
@@ -52,16 +52,20 @@ export default function NewPlaces() {
       fileInputRef.current?.click();
       return;
     }
+  
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.9,
-      allowsEditing: false,
       allowsMultipleSelection: true,
+      quality: 0.9,
     });
-    if (!res.canceled && res.assets?.length) {
-      addUris(res.assets.map(a => a.uri).filter(Boolean) as string[]);
+  
+    if (!res.canceled) {
+      
+      const uris = res.assets.map(a => a.uri);
+      addUris(uris);
     }
   };
+
 
   const takePhoto = async () => {
     if (IS_WEB) {
@@ -77,11 +81,11 @@ export default function NewPlaces() {
     if (!res.canceled && res.assets?.length) addUris([res.assets[0].uri]);
   };
 
-
   const onWebFilesSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const files = Array.from(e.target.files ?? []);
     const uris = files.map(f => URL.createObjectURL(f));
     addUris(uris);
+    
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -121,7 +125,7 @@ export default function NewPlaces() {
         </View>
       ) : (
         <View style={{ width: "100%", aspectRatio: 4/3, borderRadius: 12, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center", borderColor: "#ddd" }}>
-          <Text style={{ opacity: 0.6 }}>No photos — choose or take up to 10</Text>
+          <Text style={{ opacity: 0.6 }}>No photos — choose from galler or take a photo</Text>
         </View>
       )}
 
@@ -167,9 +171,9 @@ export default function NewPlaces() {
 
       {images.length === 0 && (
         <Text style={{ fontSize: 12, opacity: 0.6 }}>
-          “Next” appears here after you select a photo.
         </Text>
       )}
     </View>
   );
 }
+
