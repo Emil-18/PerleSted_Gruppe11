@@ -1,5 +1,5 @@
 import { Link, router } from "expo-router";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateCurrentUser, updatePhoneNumber, updateProfile } from "firebase/auth";
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -12,10 +12,12 @@ import { auth, db } from "../../FirebaseConfig";
 import { styles } from "../styles";
 
 import {
+    collection,
   doc,
   getDoc,
   runTransaction,
   serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 
 export default function RegisterScreen() {
@@ -55,7 +57,7 @@ export default function RegisterScreen() {
       const unameRef = doc(db, "usernames", uname);
       const unameSnap = await getDoc(unameRef);
       if (unameSnap.exists()) {
-        alert("Brukernavnet er allerede tatt.");
+        alert("Epost addressenn er allerede tatt.");
         return;
       }
 
@@ -82,8 +84,14 @@ export default function RegisterScreen() {
       });
 
         router.replace("/(tabs)/home");
-        auth.currentUser.displayName = username;
-        auth.currentUser.phoneNumber = phone;
+        //auth.currentUser.displayName = username;
+        //auth.currentUser.phoneNumber = phone;
+        //auth.currentUser.password = password;
+        updateProfile(user, { "displayName": uname});
+        const userDoc = doc(collection(db, username));
+        setDoc(userDoc, { phoneNumber: phone });
+        
+        setDoc(userDoc, {notifications: true});
     } catch (e: any) {
       if (e?.code === "auth/email-already-in-use") {
         alert("Denne e-posten er allerede registrert.");
@@ -149,7 +157,8 @@ export default function RegisterScreen() {
       <Pressable
         style={styles.authButton}
         onPress={handleRegister}
-        disabled={isLoading}
+              disabled={isLoading}
+        accessibilityRole = "button"
       >
         {isLoading ? (
           <ActivityIndicator color="#FFFFFF" />
