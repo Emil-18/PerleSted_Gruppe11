@@ -9,7 +9,7 @@ import { styles } from "../styles";
 import { auth, db } from "../../FirebaseConfig";
 import { useState } from "react";
 import { updateCurrentUser, updatePassword, updatePhoneNumber, updateProfile } from "firebase/auth";
-import { Firestore, doc, getDoc, runTransaction } from "firebase/firestore";
+import { Firestore, collection, doc, getDoc, runTransaction, setDoc } from "firebase/firestore";
 
 interface ProfileHeaderProps {
   imageUrl?: string;
@@ -40,15 +40,17 @@ const Settings = ({
   phoneNumberFake = dummyProfileData.phoneNumber,
   notificationsFake = dummyProfileData.notifications,
 }: ProfileHeaderProps) => {
-    const [ email, setEmail ] = useState("");
+    const userDoc = doc(collection(db, auth.currentUser?.displayName));
+    const [email, setEmail] = useState("");
     const [userName, setUserName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [phone, setPhone] = useState("");
-    const [userNotifications, setUserNotifications] = useState(true);
+    const [userNotifications, setUserNotifications] = useState(getDoc(userDoc, "notifications"));
 
     const onSave = function () {
-        console.log(doc(db, "users", username));
+        
+        
         
         let infoToUpdate = {};
         //const unameRef = doc(db, "usernames", userName);
@@ -86,8 +88,9 @@ const Settings = ({
             updatePassword(auth.currentUser, password);
         }
         if (phone) {
-            updatePhoneNumber(auth.currentUser, phone);
+            setDoc(userDoc, {phoneNumber: phone})
         }
+        setDoc(userDoc, { notifications: userNotifications });
         //auth.currentUser.phoneNumber = phone;
         //auth.currentUser.displayName = userName;
         //auth.currentUser.notifications = userNotifications;
@@ -115,7 +118,7 @@ const Settings = ({
       <SettingCard setting="E-post" settingInfo={auth.currentUser?.email} btnText="Endre" settingComponent = <TextInput keyboardType = "email-address" onChangeText = {setEmail}></TextInput>/>
       <SettingCard
         setting="Telefonnummer"
-        settingInfo={auth.currentUser?.phoneNumber}
+              settingInfo={getDoc(userDoc, "phoneNumber")}
         btnText="Endre"
         settingComponent = <TextInput keyboardType = "number-pad" onChangeText = {setPhone}></TextInput>
       />
