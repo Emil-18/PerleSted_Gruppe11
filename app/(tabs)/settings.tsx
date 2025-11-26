@@ -11,42 +11,17 @@ import { useState } from "react";
 import { updateCurrentUser, updatePassword, updatePhoneNumber, updateProfile } from "firebase/auth";
 import { Firestore, collection, doc, getDoc, runTransaction, setDoc } from "firebase/firestore";
 
-interface ProfileHeaderProps {
-  imageUrl?: string;
-  username: string;
-  verified: boolean;
-  email: string;
-  phoneNumber: string;
-  notifications: boolean;
-  password?: string;
-}
 
-const dummyProfileData = {
-  imageUrl: image,
-  username: auth.currentUser?.displayName,
-  verified: auth.currentUser?.emailVerified,
-  phoneNumber: "12345678",
-  email: auth.currentUser?.email,
-  notifications: true,
-  password: "hashedpassword",
-};
 
-const Settings = ({
-  imageUrl,
-  username = dummyProfileData.username,
-  verified = dummyProfileData.verified,
-  emailFake = dummyProfileData.email,
-  passwordFake = dummyProfileData.password,
-  phoneNumberFake = dummyProfileData.phoneNumber,
-  notificationsFake = dummyProfileData.notifications,
-}: ProfileHeaderProps) => {
+const Settings = () => {
     const userDoc = doc(collection(db, auth.currentUser?.displayName));
     const [email, setEmail] = useState("");
     const [userName, setUserName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [phone, setPhone] = useState("");
-    const [userNotifications, setUserNotifications] = useState(getDoc(userDoc, "notifications"));
+    const [userNotifications, setUserNotifications] = useState(getDoc(userDoc);
+    //const [userNotifications, setUserNotifications] = useState(false);
 
     const onSave = function () {
         
@@ -98,7 +73,7 @@ const Settings = ({
   return (
     <View style={styles.settingsContainer}>
       <Image
-        source={imageUrl ? { uri: imageUrl } : image}
+        source={"dummyImmageurl" ? { uri: "dummyImmageURL" } : "dummyImmageURL"}
         style={styles.profileImage}
       />
       <Button
