@@ -8,7 +8,7 @@ import Button from "../../components/Button";
 import { styles } from "../styles";
 import { auth, db } from "../../FirebaseConfig";
 import { useState } from "react";
-import { updateCurrentUser, updatePassword, updateProfile } from "firebase/auth";
+import { updateCurrentUser, updatePassword, updatePhoneNumber, updateProfile } from "firebase/auth";
 import { doc, getDoc, runTransaction } from "firebase/firestore";
 
 interface ProfileHeaderProps {
@@ -50,7 +50,7 @@ const Settings = ({
         let infoToUpdate = {};
         //const unameRef = doc(db, "usernames", userName);
         //const unameSnap = getDoc(unameRef);
-        
+        auth.currentUser?.phoneNumber
         //if (unameSnap.exists()) {
             //alert("Epost addressenn er allerede tatt.");
             //return;
@@ -81,6 +81,9 @@ const Settings = ({
         updateProfile(auth.currentUser, infoToUpdate);
         if (password) {
             updatePassword(auth.currentUser, password);
+        }
+        if (phone) {
+            updatePhoneNumber(auth.currentUser, phone);
         }
         //auth.currentUser.phoneNumber = phone;
         //auth.currentUser.displayName = userName;
