@@ -19,7 +19,7 @@ type Post = {
   imageUrl?: string;
 };
 
-export default function PostsMapScreen() {
+export default function NativePostsMapScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 

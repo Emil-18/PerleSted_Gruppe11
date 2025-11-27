@@ -47,7 +47,7 @@ const _Layout = () => {
         />
 
         <Tabs.Screen
-          name="map"
+          name="kart/map"
           options={{
             title: "Kart",
             tabBarIcon: ({ color, size, focused }) => (
