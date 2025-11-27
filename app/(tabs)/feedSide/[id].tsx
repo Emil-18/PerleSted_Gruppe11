@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Image } from "expo-image"; // 👈 viktig for web
+import { Image } from "expo-image";
 import { db } from "../../../FirebaseConfig";
 
 type Post = {

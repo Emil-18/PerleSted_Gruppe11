@@ -55,11 +55,9 @@ export default function NewPlaces() {
           if (!isActive) return;
 
           if (flag === "1") {
-            // Tøm lokal state
             setImages([]);
             setRequesting(false);
 
-            // Fjern flagget så dette bare skjer én gang
             await AsyncStorage.removeItem(RESET_NEW_PLACE_KEY);
           }
         } catch (e) {
@@ -186,7 +184,6 @@ export default function NewPlaces() {
         )}
       </View>
 
-      {/* Hidden web file input */}
       {IS_WEB && (
         <input
           ref={fileInputRef}

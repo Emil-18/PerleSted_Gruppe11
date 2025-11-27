@@ -156,8 +156,6 @@ export default function NewPlaceDetails() {
     setSuggestions([]);
   };
 
-  // ====== OPPRETT POST ======
-
   const onCreate = async () => {
     console.log("CREATE BUTTON PRESSED");
     try {
@@ -253,7 +251,7 @@ export default function NewPlaceDetails() {
       onChangeDescription={setDescription}
       onChangeLocation={(text) => {
         setLocation(text);
-        setLocationGeo(null); // bruker endrer tekst -> reset geo
+        setLocationGeo(null);
       }}
       onChangeTags={setTags}
       onSelectSuggestion={handleSelectSuggestion}

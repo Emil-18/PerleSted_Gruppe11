@@ -109,17 +109,14 @@ const Settings = () => {
         await updateProfile(user, { displayName: userName });
       }
 
-      // email
       if (email && email !== user.email) {
         await updateEmail(user, email);
       }
 
-      // password
       if (password) {
         await updatePassword(user, password);
       }
 
-      // --- Oppdater Firestore (phoneNumber + notifications) ---
       await setDoc(
         userDoc,
         {

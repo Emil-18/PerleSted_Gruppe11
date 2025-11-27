@@ -29,13 +29,12 @@ export async function uploadImageAsync({
   asset: Picked;
   path: string;
 }): Promise<string> {
-  // Sørg for at vi har JPEG, ikke HEIC
   const jpegUri = await ensureJpeg(asset.uri);
 
   const response = await fetch(jpegUri);
   const blob = await response.blob();
 
-  const storageRef = ref(storage, path); // f.eks. users/uid/posts/postId/image_0.jpg
+  const storageRef = ref(storage, path);
   await uploadBytes(storageRef, blob);
 
   const downloadUrl = await getDownloadURL(storageRef);
