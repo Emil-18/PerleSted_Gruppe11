@@ -23,7 +23,6 @@ import {
 const Settings = () => {
   const user = auth.currentUser as User | null;
 
-  // Hvis ingen er logget inn:
   if (!user) {
     return (
       <View style={styles.settingsContainer}>
@@ -32,7 +31,6 @@ const Settings = () => {
     );
   }
 
-  // Firestore-dokument: /users/{uid}
   const userDoc = doc(db, "users", user.uid);
 
   const [email, setEmail] = useState(user.email ?? "");
@@ -43,7 +41,6 @@ const Settings = () => {
   const [userNotifications, setUserNotifications] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Hent ekstra info fra Firestore (phoneNumber, notifications)
   useEffect(() => {
     let isMounted = true;
 
@@ -74,41 +71,56 @@ const Settings = () => {
   }, [userDoc]);
 
   const onSave = async () => {
+    // --- Validering ---
+    if (userName && (userName.length < 3 || userName.length > 20)) {
+      Alert.alert("Feil", "Brukernavnet må være mellom 3 og 20 tegn");
+      return;
+    }
+  
+    if (email && !(email.includes("@") && email.includes("."))) {
+      Alert.alert("Feil", "E-postadressen er ugyldig: " + email);
+      return;
+    }
+  
+    if (password) {
+      if (password !== confirmPassword) {
+        Alert.alert("Feil", "Passordene er ikke like");
+        return;
+      }
+      if (password.length <= 3) {
+        Alert.alert("Feil", "Passordet må være lengre enn tre tegn");
+        return;
+      }
+    }
+  
+    const infoToUpdate: { displayName?: string | null; phoneNumber?: string | null } = {};
+    if (userName) infoToUpdate.displayName = userName;
+    infoToUpdate.phoneNumber = phone || auth.currentUser?.phoneNumber || null;
+  
     try {
-      // --- Validering ---
-      if (userName && (userName.length < 3 || userName.length > 20)) {
-        Alert.alert("Feil", "Brukernavnet må være mellom 3 og 20 tegn");
-        return;
-      }
-
-      if (email && !(email.includes("@") && email.includes("."))) {
-        Alert.alert("Feil", "E-postadressen er ugyldig: " + email);
-        return;
-      }
-
+      await updateProfile(auth.currentUser!, infoToUpdate);
+  
       if (password) {
-        if (password !== confirmPassword) {
-          Alert.alert("Feil", "Passordene er ikke like");
-          return;
-        }
-        if (password.length <= 3) {
-          Alert.alert("Feil", "Passordet må være lengre enn tre tegn");
-          return;
-        }
-        infoToUpdate["phoneNumber"] = phone ? phone : auth.currentUser?.phoneNumber
-        updateProfile(auth.currentUser, infoToUpdate);
-        if (password) {
-            updatePassword(auth.currentUser, password);
-        }
-        if (phone) {
-            setDoc(userDoc, {phoneNumber: phone})
-        }
-        setDoc(userDoc, { notifications: userNotifications });
-        //auth.currentUser.phoneNumber = phone;
-        //auth.currentUser.displayName = userName;
-        //auth.currentUser.notifications = userNotifications;
+        await updatePassword(auth.currentUser!, password);
+      }
+  
+      await setDoc(
+        userDoc,
+        {
+          phoneNumber: phone,
+          notifications: userNotifications,
+          email: email,
+        },
+        { merge: true }
+      );
+  
+      Alert.alert("OK", "Innstillingene er lagret");
+    } catch (e: any) {
+      console.log("Feil ved lagring:", e);
+      Alert.alert("Feil", e?.message ?? "Noe gikk galt ved lagring");
     }
   };
+  
 
   if (loading) {
     return (
