@@ -12,7 +12,7 @@ import { auth, db } from "../../FirebaseConfig";
 import { styles } from "../styles";
 
 import {
-    collection,
+  collection,
   doc,
   getDoc,
   runTransaction,

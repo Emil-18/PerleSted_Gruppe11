@@ -3,10 +3,11 @@ import { Camera } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
-import { Alert, Image, Platform, Pressable, Text, View } from "react-native";
+import { Alert, Image, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 const IS_WEB = Platform.OS === "web";
 const MAX = 10;
+const CONTENT_MAX_WIDTH = 100;
 
 export default function NewPlaces() {
   const router = useRouter();
@@ -77,10 +78,7 @@ export default function NewPlaces() {
 
   const takePhoto = async () => {
     if (IS_WEB) {
-      Alert.alert(
-        "Not available on web",
-        "Use the gallery button."
-      );
+      Alert.alert("Not available on web", "Use the gallery button.");
       return;
     }
     if (images.length >= MAX)
@@ -101,114 +99,118 @@ export default function NewPlaces() {
   };
 
   return (
-    <View style={{ flex: 1, padding: 16, gap: 16 }}>
+    <ScrollView
+    contentContainerStyle={{
+      flexGrow: 1,
+      paddingVertical: 16,
+    }}
+  >
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
+          width: "100%",
+          maxWidth: CONTENT_MAX_WIDTH,
+          padding: 16,
+          gap: 16,
         }}
       >
-        <Text style={{ fontSize: 18, fontWeight: "700" }}>
-          Add a photo of this place
-        </Text>
-        {images.length > 0 && (
-          <Pressable
-            onPress={() =>
-              router.push({
-                pathname: "/nyttStedSide/details",
-                params: { images: JSON.stringify(images) },
-              })
-            }
-            style={{
-              paddingHorizontal: 14,
-              paddingVertical: 10,
-              backgroundColor: "#2563eb",
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ color: "white", fontWeight: "700" }}>Next</Text>
-          </Pressable>
-        )}
-      </View>
-
-      <Text style={{ opacity: 0.6 }}>
-        {images.length}/{MAX} selected
-      </Text>
-
-      {images.length ? (
         <View
           style={{
             flexDirection: "row",
-            flexWrap: "wrap",
-            marginHorizontal: -4,
-          }}
-        >
-          {images.map((uri, idx) => (
-            <View key={`${uri}-${idx}`} style={{ width: "33.333%", padding: 4 }}>
-              <View style={{ aspectRatio: 1, position: "relative" }}>
-                <Image
-                  source={{ uri }}
-                  style={{ width: "100%", height: "100%", borderRadius: 10 }}
-                />
-                <Pressable
-                  onPress={() =>
-                    setImages((prev) => prev.filter((_, i) => i !== idx))
-                  }
-                  style={{
-                    position: "absolute",
-                    top: 6,
-                    right: 6,
-                    backgroundColor: "rgba(0,0,0,0.6)",
-                    borderRadius: 10,
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                  }}
-                >
-                  <Text style={{ color: "white", fontWeight: "700" }}>×</Text>
-                </Pressable>
-              </View>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <View
-          style={{
-            width: "100%",
-            aspectRatio: 4 / 3,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderStyle: "dashed",
             alignItems: "center",
-            justifyContent: "center",
-            borderColor: "#ddd",
+            justifyContent: "space-between",
           }}
         >
-          <Text style={{ opacity: 0.6 }}>
-            No photos — choose or take up to 10
+          <Text style={{ fontSize: 18, fontWeight: "700" }}>
+            Add a photo of this place
           </Text>
+          {images.length > 0 && (
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: "/nyttStedSide/details",
+                  params: { images: JSON.stringify(images) },
+                })
+              }
+              style={{
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                backgroundColor: "#2563eb",
+                borderRadius: 10,
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "700" }}>Next</Text>
+            </Pressable>
+          )}
         </View>
-      )}
 
-      <View style={{ flexDirection: "row", gap: 12 }}>
-        <Pressable
-          onPress={pickFromGallery}
-          disabled={requesting || images.length >= MAX}
-          style={{
-            flex: 1,
-            backgroundColor: "#eee",
-            paddingVertical: 14,
-            borderRadius: 10,
-            alignItems: "center",
-            opacity: requesting || images.length >= MAX ? 0.6 : 1,
-          }}
-        >
-          <Text>{IS_WEB ? "Choose files" : "Choose from gallery"}</Text>
-        </Pressable>
+        <Text style={{ opacity: 0.6 }}>
+          {images.length}/{MAX} selected
+        </Text>
 
-        {!IS_WEB && (
+        {images.length ? (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              marginHorizontal: -4,
+            }}
+          >
+            {images.map((uri, idx) => (
+              <View
+                key={`${uri}-${idx}`}
+                style={{ width: "33.333%", padding: 4 }}
+              >
+                <View style={{ aspectRatio: 1, position: "relative" }}>
+                  <Image
+                    source={{ uri }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
+                    }}
+                  />
+                  <Pressable
+                    onPress={() =>
+                      setImages((prev) => prev.filter((_, i) => i !== idx))
+                    }
+                    style={{
+                      position: "absolute",
+                      top: 6,
+                      right: 6,
+                      backgroundColor: "rgba(0,0,0,0.6)",
+                      borderRadius: 10,
+                      paddingHorizontal: 6,
+                      paddingVertical: 2,
+                    }}
+                  >
+                    <Text style={{ color: "white", fontWeight: "700" }}>×</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View
+            style={{
+              width: "100%",
+              aspectRatio: 4 / 3,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderStyle: "dashed",
+              alignItems: "center",
+              justifyContent: "center",
+              borderColor: "#ddd",
+            }}
+          >
+            <Text style={{ opacity: 0.6 }}>
+              No photos — choose or take up to 10
+            </Text>
+          </View>
+        )}
+
+        <View style={{ flexDirection: "row", gap: 12 }}>
           <Pressable
-            onPress={takePhoto}
+            onPress={pickFromGallery}
             disabled={requesting || images.length >= MAX}
             style={{
               flex: 1,
@@ -219,27 +221,42 @@ export default function NewPlaces() {
               opacity: requesting || images.length >= MAX ? 0.6 : 1,
             }}
           >
-            <Text>Take a photo</Text>
+            <Text>{IS_WEB ? "Choose files" : "Choose from gallery"}</Text>
           </Pressable>
+
+          {!IS_WEB && (
+            <Pressable
+              onPress={takePhoto}
+              disabled={requesting || images.length >= MAX}
+              style={{
+                flex: 1,
+                backgroundColor: "#eee",
+                paddingVertical: 14,
+                borderRadius: 10,
+                alignItems: "center",
+                opacity: requesting || images.length >= MAX ? 0.6 : 1,
+              }}
+            >
+              <Text>Take a photo</Text>
+            </Pressable>
+          )}
+        </View>
+
+        {IS_WEB && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={onWebFilesSelected}
+            style={{ display: "none" }}
+          />
+        )}
+
+        {images.length === 0 && (
+          <Text style={{ fontSize: 12, opacity: 0.6 }}>“Next”.</Text>
         )}
       </View>
-
-      {IS_WEB && (
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={onWebFilesSelected}
-          style={{ display: "none" }}
-        />
-      )}
-
-      {images.length === 0 && (
-        <Text style={{ fontSize: 12, opacity: 0.6 }}>
-          “Next” appears here after you select a photo.
-        </Text>
-      )}
-    </View>
+    </ScrollView>
   );
 }

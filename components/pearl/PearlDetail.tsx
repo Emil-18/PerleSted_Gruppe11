@@ -131,7 +131,6 @@ export function PearlDetail(props: PearlDetailProps) {
         />
       </Field>
 
-      {/* Location + forslag */}
       <Field label="Location">
         <TextInput
           value={location}
