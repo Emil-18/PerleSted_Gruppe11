@@ -88,7 +88,7 @@ export default function RegisterScreen() {
         //auth.currentUser.phoneNumber = phone;
         //auth.currentUser.password = password;
         updateProfile(user, { "displayName": uname});
-        const userDoc = doc(collection(db, username));
+        const userDoc = doc(db, "users", user.uid);
         setDoc(userDoc, { phoneNumber: phone });
         
         setDoc(userDoc, {notifications: true});
