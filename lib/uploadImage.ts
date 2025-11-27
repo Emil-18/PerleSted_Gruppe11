@@ -1,8 +1,8 @@
 
-import { storage } from "@/lib/FirebaseConfig";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { Platform } from "react-native";
+import { auth, storage } from "@/lib/FirebaseConfig";
 import * as MediaLibrary from "expo-media-library";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { Platform } from "react-native";
 
 export type Picked = { uri: string; assetId?: string; mimeType?: string; fileName?: string };
 
@@ -17,14 +17,17 @@ async function ensureMediaLibraryPerms() {
   return false;
 }
 
-export async function uploadImageAsync({
-  asset,
-  path,
-}: {
+export async function uploadImageAsync({ asset, path } : {
   asset: Picked;
   path: string;
 }): Promise<string> {
   try {
+    const user = auth.currentUser;
+    console.log("UPLOAD CURRENT USER:", user?.uid, user?.email);
+
+    if (!user) {
+      throw new Error("Not logged in when trying to upload image.");
+    }
     let uri = asset.uri;
 
     if (Platform.OS === "ios" && uri.startsWith("ph://")) {
@@ -46,6 +49,11 @@ export async function uploadImageAsync({
     }
 
     const objectRef = ref(storage, path);
+    console.log(
+      "STORAGE APP OPTIONS:",
+      storage.app.options.projectId,
+      storage.app.options.storageBucket
+    );
     await uploadBytes(objectRef, blob, { contentType: asset.mimeType ?? (blob as any).type });
     const url = await getDownloadURL(objectRef);
     return url;

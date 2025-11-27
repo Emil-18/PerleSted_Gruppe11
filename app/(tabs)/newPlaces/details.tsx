@@ -1,12 +1,12 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, Image, Alert, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useMemo, useState } from "react";
+import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
+import { GeoPoint, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "../../../FirebaseConfig";
-import { collection, doc, serverTimestamp, setDoc, GeoPoint } from "firebase/firestore";
 
-import { uploadImageAsync } from "@/lib/uploadImage";
 import { getCurrentCoords } from "@/lib/location";
+import { uploadImageAsync } from "@/lib/uploadImage";
 
 type Picked = { uri: string; assetId?: string; mimeType?: string; fileName?: string };
 
@@ -75,7 +75,7 @@ export default function NewPlaceDetails() {
         return;
       }
 
-      const postRef = doc(collection(db, "posts"));
+      const postRef = doc(collection(db, "users", user.uid, "posts"));
       const postId = postRef.id;
 
 
@@ -87,6 +87,7 @@ export default function NewPlaceDetails() {
         })
       );
 
+      console.log("IMAGE URLS AFTER UPLOAD:", imageUrls);
       // 3) Tags
       const tagArray = tags
         .split(/[,\s]+/)
