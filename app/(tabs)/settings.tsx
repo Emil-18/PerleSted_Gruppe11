@@ -95,42 +95,18 @@ const Settings = () => {
           Alert.alert("Feil", "Passordet må være lengre enn tre tegn");
           return;
         }
-      }
-
-      if (phone && !phone.match(/^[0-9]{8}$/)) {
-        Alert.alert("Feil", "Ugyldig telefonnummer (må være 8 siffer)");
-        return;
-      }
-
-      // --- Oppdater Firebase Auth ---
-
-      // displayName
-      if (userName && userName !== user.displayName) {
-        await updateProfile(user, { displayName: userName });
-      }
-
-      if (email && email !== user.email) {
-        await updateEmail(user, email);
-      }
-
-      if (password) {
-        await updatePassword(user, password);
-      }
-
-      await setDoc(
-        userDoc,
-        {
-          username: userName || user.displayName || null,
-          phoneNumber: phone || null,
-          notifications: userNotifications,
-        },
-        { merge: true }
-      );
-
-      Alert.alert("Lagret", "Innstillingene dine er oppdatert.");
-    } catch (e: any) {
-      console.log("Feil ved lagring:", e);
-      Alert.alert("Feil", e?.message ?? "Noe gikk galt ved lagring.");
+        infoToUpdate["phoneNumber"] = phone ? phone : auth.currentUser?.phoneNumber
+        updateProfile(auth.currentUser, infoToUpdate);
+        if (password) {
+            updatePassword(auth.currentUser, password);
+        }
+        if (phone) {
+            setDoc(userDoc, {phoneNumber: phone})
+        }
+        setDoc(userDoc, { notifications: userNotifications });
+        //auth.currentUser.phoneNumber = phone;
+        //auth.currentUser.displayName = userName;
+        //auth.currentUser.notifications = userNotifications;
     }
   };
 
