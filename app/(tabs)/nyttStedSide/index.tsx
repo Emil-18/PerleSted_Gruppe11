@@ -98,7 +98,7 @@ export default function NewPlaces() {
 
   const takePhoto = async () => {
     if (IS_WEB) {
-      Alert.alert("Not available on web", "Use the gallery button (it will also open the camera on mobile browsers).");
+      Alert.alert("Not available on web", "Use the gallery button.");
       return;
     }
     if (images.length >= MAX) return Alert.alert("Limit reached", `Max ${MAX} photos.`);
@@ -125,7 +125,7 @@ export default function NewPlaces() {
         {images.length > 0 && (
           <Pressable
             onPress={() =>
-              router.push({ pathname: "/newPlaces/details", params: { images: JSON.stringify(images) } })
+              router.push({ pathname: "/nyttStedSide/details", params: { images: JSON.stringify(images) } })
             }
             style={{ paddingHorizontal: 14, paddingVertical: 10, backgroundColor: "#2563eb", borderRadius: 10 }}
           >

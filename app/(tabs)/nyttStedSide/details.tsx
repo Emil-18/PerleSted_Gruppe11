@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import React, { useMemo, useState, useCallback } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { GeoPoint, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
@@ -50,6 +50,15 @@ export default function NewPlaceDetails() {
   const { images } = useLocalSearchParams<{ images?: string }>();
   const [imageUris, setImageUris] = useState<string[]>(() =>
   parseImagesParam(images)
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (imageUris.length === 0) {
+        // No images -> this screen makes no sense, go to "Add a photo" page
+        router.replace("/nyttStedSide"); // path to your picker/index screen
+      }
+    }, [imageUris, router])
   );
 
   const assets: Picked[] = useMemo(
@@ -139,7 +148,7 @@ export default function NewPlaceDetails() {
 
       
       Alert.alert("Post created!");
-      router.replace("/feed/feed/");
+      router.replace("/feedSide/feed/");
     } catch (error: any) {
       console.log("STORAGE UPLOAD ERROR:", {
         name: error.name,

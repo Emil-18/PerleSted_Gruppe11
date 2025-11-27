@@ -1,6 +1,3 @@
-import React, { useEffect, useState } from "react";
-import { FlatList, StyleSheet, View, ActivityIndicator, Text } from "react-native";
-import { PearlCard } from "../../../components/pearl/PearlCard";
 import { router } from "expo-router";
 import {
   collectionGroup,
@@ -8,7 +5,10 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import { db } from "../../../FirebaseConfig";
+import { PearlCard } from "../../../components/pearl/PearlCard";
 
 type Post = {
   id: string;
@@ -73,7 +73,7 @@ export default function Feed() {
           imageUrl={item.imageUrls?.[0]}
           onPress={() =>
             router.push({
-              pathname: "/feed/[id]",
+              pathname: "/feedSide/[id]",
               params: { id: item.id, uid: item.userId }, // 👈 viktig
             })
           }

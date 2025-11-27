@@ -27,7 +27,7 @@ const _Layout = () => {
         />
 
         <Tabs.Screen
-          name="feed"
+          name="feedSide"
           options={{
             title: "Feed",
             tabBarIcon: ({ color, size, focused }) => (
@@ -37,7 +37,7 @@ const _Layout = () => {
         />
 
         <Tabs.Screen
-          name="newPlaces"
+          name="nyttStedSide"
           options={{
             title: "Nytt sted",
             tabBarIcon: ({ color, size, focused }) => (

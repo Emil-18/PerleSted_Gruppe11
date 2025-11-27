@@ -1,9 +1,9 @@
-import React, { useCallback, useRef, useState } from "react";
-import { View, Text, Pressable, Image, Alert, Platform } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { Camera } from "expo-camera";
-import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Camera } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useRef, useState } from "react";
+import { Alert, Image, Platform, Pressable, Text, View } from "react-native";
 
 const IS_WEB = Platform.OS === "web";
 const MAX = 10;
@@ -92,7 +92,7 @@ export default function NewPlaces() {
         {images.length > 0 && (
           <Pressable
             onPress={() =>
-              router.push({ pathname: "/newPlaces/details", params: { images: JSON.stringify(images) } })
+              router.push({ pathname: "/nyttStedSide/details", params: { images: JSON.stringify(images) } })
             }
             style={{ paddingHorizontal: 14, paddingVertical: 10, backgroundColor: "#2563eb", borderRadius: 10 }}
           >
