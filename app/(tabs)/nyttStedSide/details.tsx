@@ -1,18 +1,45 @@
-import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import React, { useMemo, useState, useCallback } from "react";
-import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  Alert,
+} from "react-native";
 
-import { GeoPoint, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  GeoPoint,
+  collection,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { auth, db } from "../../../FirebaseConfig";
 
-import { getCurrentCoords } from "@/lib/location";
 import { uploadImageAsync } from "@/lib/uploadImage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import {
+  LocationSuggestion,
+  PearlDetail,
+} from "../../../components/pearl/PearlDetail";
+
 const RESET_NEW_PLACE_KEY = "reset-new-place";
+const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN;
 
-type Picked = { uri: string; assetId?: string; mimeType?: string; fileName?: string };
 
+type Picked = {
+  uri: string;
+  assetId?: string;
+  mimeType?: string;
+  fileName?: string;
+};
 
 function parseImagesParam(images?: string): string[] {
   if (!images) return [];
@@ -44,19 +71,19 @@ function extFrom(a: Picked) {
   return fromUri || "jpg";
 }
 
+
 export default function NewPlaceDetails() {
   const router = useRouter();
-  
   const { images } = useLocalSearchParams<{ images?: string }>();
+
   const [imageUris, setImageUris] = useState<string[]>(() =>
-  parseImagesParam(images)
+    parseImagesParam(images)
   );
 
   useFocusEffect(
     useCallback(() => {
       if (imageUris.length === 0) {
-        // No images -> this screen makes no sense, go to "Add a photo" page
-        router.replace("/nyttStedSide"); // path to your picker/index screen
+        router.replace("/nyttStedSide");
       }
     }, [imageUris, router])
   );
@@ -71,10 +98,65 @@ export default function NewPlaceDetails() {
   const [location, setLocation] = useState("");
   const [tags, setTags] = useState("");
 
+
+  const [locationGeo, setLocationGeo] = useState<GeoPoint | null>(null);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
   const canCreate = useMemo(
     () => imageUris.length > 0 && title.trim().length > 0,
     [imageUris.length, title]
   );
+
+  useEffect(() => {
+    const q = location.trim();
+    if (!q || q.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    if (!MAPBOX_TOKEN) {
+      console.warn("Missing EXPO_PUBLIC_MAPBOX_TOKEN");
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        setLoadingSuggestions(true);
+
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          q
+        )}.json?access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=5&language=no`;
+
+        const res = await fetch(url);
+        const json = await res.json();
+
+        const items: LocationSuggestion[] = (json.features ?? []).map(
+          (f: any) => ({
+            id: f.id,
+            name: f.place_name as string,
+            lat: f.center[1],
+            lng: f.center[0],
+          })
+        );
+
+        setSuggestions(items);
+      } catch (e) {
+        console.warn("Failed to fetch location suggestions", e);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [location]);
+
+  const handleSelectSuggestion = (s: LocationSuggestion) => {
+    setLocation(s.name);
+    setLocationGeo(new GeoPoint(s.lat, s.lng));
+    setSuggestions([]);
+  };
+
+  // ====== OPPRETT POST ======
 
   const onCreate = async () => {
     console.log("CREATE BUTTON PRESSED");
@@ -87,9 +169,16 @@ export default function NewPlaceDetails() {
         return;
       }
 
+      if (!locationGeo) {
+        Alert.alert(
+          "Velg sted",
+          "Søk etter sted og trykk på et forslag, slik at vi kan plassere posten på kartet."
+        );
+        return;
+      }
+
       const postRef = doc(collection(db, "users", user.uid, "posts"));
       const postId = postRef.id;
-
 
       const imageUrls = await Promise.all(
         assets.map((a, i) => {
@@ -99,22 +188,12 @@ export default function NewPlaceDetails() {
         })
       );
 
-      console.log("IMAGE URLS AFTER UPLOAD:", imageUrls);
-      // 3) Tags
       const tagArray = tags
         .split(/[,\s]+/)
         .map((t) => t.trim().toLowerCase())
         .filter(Boolean)
         .slice(0, 10);
 
-      // 4) Coordinates (optional)
-      let geo: GeoPoint | null = null;
-      try {
-        const { lat, lng } = await getCurrentCoords();
-        geo = new GeoPoint(lat, lng);
-      } catch {}
-
-      // 5) Firestore
       await setDoc(postRef, {
         id: postId,
         userId: user.uid,
@@ -128,7 +207,7 @@ export default function NewPlaceDetails() {
         title: title.trim(),
         description: description.trim(),
         locationText: location.trim(),
-        locationGeo: geo,
+        locationGeo: locationGeo,
         tags: tagArray,
         imageUrls,
 
@@ -143,10 +222,10 @@ export default function NewPlaceDetails() {
       setTitle("");
       setDescription("");
       setLocation("");
+      setLocationGeo(null);
       setTags("");
       setImageUris([]);
 
-      
       Alert.alert("Post created!");
       router.replace("/feedSide/feed/");
     } catch (error: any) {
@@ -157,79 +236,28 @@ export default function NewPlaceDetails() {
         customData: error.customData,
       });
     }
-  }
-
-  const cover = imageUris[0];
-  const others = imageUris.slice(1);
+  };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12 }}>details</Text>
-
-      {cover ? (
-        <>
-          <Image source={{ uri: cover }} style={{ width: "100%", aspectRatio: 4 / 3, borderRadius: 12, marginBottom: 12 }} />
-          {others.length > 0 && (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -4, marginBottom: 16 }}>
-              {others.map((uri, idx) => (
-                <View key={`${uri}-${idx}`} style={{ width: "33.333%", padding: 4 }}>
-                  <Image source={{ uri }} style={{ width: "100%", aspectRatio: 1, borderRadius: 10 }} />
-                </View>
-              ))}
-            </View>
-          )}
-        </>
-      ) : (
-        <Text style={{ color: "red", marginBottom: 16 }}>Images missing — go back and select at least one.</Text>
-      )}
-
-      <Field label="Title *">
-        <TextInput value={title} onChangeText={setTitle} placeholder="Legg til overskrift ..." style={inputStyle} />
-      </Field>
-
-      <Field label="Description">
-        <TextInput
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Legg til beskrivelse ..."
-          style={[inputStyle, { height: 100, textAlignVertical: "top" }]}
-          multiline
-        />
-      </Field>
-
-      <Field label="Location">
-        <TextInput value={location} onChangeText={setLocation} placeholder="Legg til sted" style={inputStyle} />
-      </Field>
-
-      <Field label="Tags">
-        <TextInput value={tags} onChangeText={setTags} placeholder="e.g. cozy, waterfront, sunset" style={inputStyle} />
-      </Field>
-
-      <Pressable
-        onPress={onCreate}
-        disabled={!canCreate}
-        style={{ marginTop: 12, backgroundColor: canCreate ? "#111" : "#bbb", paddingVertical: 14, borderRadius: 10, alignItems: "center" }}
-      >
-        <Text style={{ color: "white", fontWeight: "700" }}>Create new post</Text>
-      </Pressable>
-    </ScrollView>
+    <PearlDetail
+      imageUris={imageUris}
+      title={title}
+      description={description}
+      location={location}
+      tags={tags}
+      canCreate={canCreate}
+      suggestions={suggestions}
+      loadingSuggestions={loadingSuggestions}
+      hasLocationGeo={!!locationGeo}
+      onChangeTitle={setTitle}
+      onChangeDescription={setDescription}
+      onChangeLocation={(text) => {
+        setLocation(text);
+        setLocationGeo(null); // bruker endrer tekst -> reset geo
+      }}
+      onChangeTags={setTags}
+      onSelectSuggestion={handleSelectSuggestion}
+      onCreate={onCreate}
+    />
   );
 }
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <View style={{ marginBottom: 14 }}>
-      <Text style={{ fontWeight: "600", marginBottom: 6 }}>{label}</Text>
-      {children}
-    </View>
-  );
-}
-
-const inputStyle = {
-  borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 10,
-  paddingHorizontal: 12,
-  paddingVertical: 12,
-  backgroundColor: "white",
-} as const;

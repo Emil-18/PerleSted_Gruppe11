@@ -32,7 +32,6 @@ export default function PearlDetailScreen() {
   const router = useRouter();
   const { id, uid } = useLocalSearchParams<{ id: string; uid: string }>();
 
-  // 🔹 ALL hooks must be here at the top, before any return
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -63,7 +62,6 @@ export default function PearlDetailScreen() {
     return () => unsub();
   }, [id, uid]);
 
-  // 🔹 early returns are OK *after* all hooks
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -153,7 +151,6 @@ export default function PearlDetailScreen() {
           </View>
         )}
 
-        {/* Tilbake-knapp */}
         <TouchableOpacity
           onPress={() => router.replace("feedSide/feed")}
           style={{
@@ -169,7 +166,6 @@ export default function PearlDetailScreen() {
           <Ionicons name="arrow-back" size={22} color="#000" />
         </TouchableOpacity>
 
-        {/* Favoritt-knapp */}
         <TouchableOpacity
           style={{
             position: "absolute",
@@ -185,7 +181,6 @@ export default function PearlDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Innhold */}
       <View style={{ padding: 16 }}>
         <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 6 }}>
           {post.title}
