@@ -1,47 +1,66 @@
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet, View, ActivityIndicator, Text } from "react-native";
+import { PearlCard } from "../../../components/pearl/PearlCard";
 import { router } from "expo-router";
 import {
   collectionGroup,
-  getDocs,
+  onSnapshot,
   orderBy,
   query,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
 import { db } from "../../../FirebaseConfig";
-import { PearlCard } from "../../../components/pearl/PearlCard";
 
 type Post = {
   id: string;
   userId: string;
   title: string;
   imageUrls: string[];
-  author: {
-    displayName: string | null;
+  author?: {
     uid: string;
-    photoURL: string | null;
+    email?: string | null;
+    displayName?: string | null;
+    photoURL?: string | null;
   };
 };
 
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadPosts = async () => {
-      try {
-        const q = query(
-          collectionGroup(db, "posts"),
-          orderBy("createdAt", "desc")
-        );
-        const snap = await getDocs(q);
-        const items = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Post[];
+    const q = query(
+      collectionGroup(db, "posts"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const items = snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as any),
+        })) as Post[];
+
         setPosts(items);
-      } catch (e: any) {
-        console.log("Error loading posts:", e?.code, e?.message);
+        setLoading(false);
+      },
+      (error) => {
+        console.log("Error loading posts (realtime):", error);
+        setLoading(false);
       }
-    };
-  
-    loadPosts();
+    );
+
+    return () => unsub();
   }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator />
+        <Text>Laster inn innlegg...</Text>
+      </View>
+    );
+  }
 
   return (
     <FlatList
@@ -51,16 +70,16 @@ export default function Feed() {
         <PearlCard
           id={item.id}
           title={item.title}
-          imageUrl={item.imageUrls[0]}
+          imageUrl={item.imageUrls?.[0]}
           onPress={() =>
             router.push({
               pathname: "/feed/[id]",
-              params: { id: item.id, uid: item.userId },
+              params: { id: item.id, uid: item.userId }, // 👈 viktig
             })
           }
         />
       )}
-      ListHeaderComponent={<View style={styles.content}></View>}
+      ListHeaderComponent={<View style={styles.content} />}
     />
   );
 }

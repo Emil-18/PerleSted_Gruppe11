@@ -5,6 +5,7 @@ import { Camera } from "expo-camera";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const RESET_NEW_PLACE_KEY = "reset-new-place";
 const IS_WEB = Platform.OS === "web";
 const MAX = 10;
 
@@ -44,7 +45,35 @@ export default function NewPlaces() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { requestPermissionsIfNeeded(); }, [requestPermissionsIfNeeded]));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const checkReset = async () => {
+        try {
+          const flag = await AsyncStorage.getItem(RESET_NEW_PLACE_KEY);
+          if (!isActive) return;
+
+          if (flag === "1") {
+            // Tøm lokal state
+            setImages([]);
+            setRequesting(false);
+
+            // Fjern flagget så dette bare skjer én gang
+            await AsyncStorage.removeItem(RESET_NEW_PLACE_KEY);
+          }
+        } catch (e) {
+          console.log("Failed to check reset flag", e);
+        }
+      };
+
+      checkReset();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
 
   const pickFromGallery = async () => {

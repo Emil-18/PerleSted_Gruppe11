@@ -7,6 +7,9 @@ import { auth, db } from "../../../FirebaseConfig";
 
 import { getCurrentCoords } from "@/lib/location";
 import { uploadImageAsync } from "@/lib/uploadImage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const RESET_NEW_PLACE_KEY = "reset-new-place";
 
 type Picked = { uri: string; assetId?: string; mimeType?: string; fileName?: string };
 
@@ -43,11 +46,11 @@ function extFrom(a: Picked) {
 
 export default function NewPlaceDetails() {
   const router = useRouter();
+  
   const { images } = useLocalSearchParams<{ images?: string }>();
-
-
-  const imageUris = useMemo(() => parseImagesParam(images), [images]);
-
+  const [imageUris, setImageUris] = useState<string[]>(() =>
+  parseImagesParam(images)
+  );
 
   const assets: Picked[] = useMemo(
     () => imageUris.map((uri) => ({ uri })),
@@ -126,6 +129,15 @@ export default function NewPlaceDetails() {
         commentCount: 0,
       });
 
+      await AsyncStorage.setItem(RESET_NEW_PLACE_KEY, "1");
+
+      setTitle("");
+      setDescription("");
+      setLocation("");
+      setTags("");
+      setImageUris([]);
+
+      
       Alert.alert("Post created!");
       router.replace("/feed/feed/");
     } catch (error: any) {

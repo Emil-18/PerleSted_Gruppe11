@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -10,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../FirebaseConfig";
 
 type Post = {
@@ -33,30 +33,30 @@ export default function PearlDetailScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadPost = async () => {
-      if (!id || !uid) {
-        setLoading(false);
-        return;
-      }
-      try {
-        // direkte path: users/{uid}/posts/{id}
-        const ref = doc(db, "users", uid, "posts", id);
-        const snap = await getDoc(ref);
+    if (!id || !uid) {
+      setLoading(false);
+      return;
+    }
 
+    // 👇 realtime på ENKELT dokument: users/{uid}/posts/{id}
+    const ref = doc(db, "users", uid, "posts", id);
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
         if (!snap.exists()) {
           setPost(null);
         } else {
           setPost(snap.data() as Post);
         }
-      } catch (e) {
-        console.log("Error loading post:", e);
-        setPost(null);
-      } finally {
+        setLoading(false);
+      },
+      (error) => {
+        console.log("Error loading post:", error);
         setLoading(false);
       }
-    };
+    );
 
-    loadPost();
+    return () => unsub();
   }, [id, uid]);
 
   if (loading) {
