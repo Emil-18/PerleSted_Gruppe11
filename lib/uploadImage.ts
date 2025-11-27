@@ -10,7 +10,6 @@ export type Picked = {
 };
 
 async function ensureJpeg(uri: string) {
-  // Konverterer uansett – HEIC → JPEG, og andre formater blir re-encodet
   const result = await ImageManipulator.manipulateAsync(
     uri,
     [],
@@ -19,7 +18,7 @@ async function ensureJpeg(uri: string) {
       format: ImageManipulator.SaveFormat.JPEG,
     }
   );
-  return result.uri; // ny lokal fil (nå JPEG)
+  return result.uri;
 }
 
 export async function uploadImageAsync({
