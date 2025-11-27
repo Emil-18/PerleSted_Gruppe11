@@ -1,37 +1,35 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-
   // Header
   headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 5,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontWeight: "bold",
+    color: "#333333",
   },
   headerIconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
   },
 
-  // Tabs layout 
+  // Tabs layout
   tabsLayoutContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    
+    backgroundColor: "#FFFFFF",
   },
 
-  // Profile 
+  // Profile
   profileButton: {
     backgroundColor: "transparent",
     padding: 16,
@@ -83,7 +81,8 @@ export const styles = StyleSheet.create({
     gap: 12,
     justifyContent: "space-between",
   },
-  //Pearl
+
+  // Pearl
   pearlTitle: {
     fontSize: 20,
     textAlign: "center",
@@ -95,7 +94,6 @@ export const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     backgroundColor: "#fff",
-    
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 4 },
@@ -111,82 +109,101 @@ export const styles = StyleSheet.create({
     height: 180,
   },
 
-   // Auth
-   authContainer: {
+  // Auth
+  authContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   authTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 40,
-    color: '#333333',
+    color: "#333333",
   },
   authInput: {
-    width: '90%',
+    width: "90%",
     height: 50,
-    borderColor: '#DDDDDD',
+    borderColor: "#DDDDDD",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 15,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: "#F9F9F9",
   },
   authButton: {
-    backgroundColor: '#E1F8D7',
+    backgroundColor: "#E1F8D7",
     paddingVertical: 15,
     borderRadius: 8,
-    width: '90%',
-    alignItems: 'center',
+    width: "90%",
+    alignItems: "center",
     marginTop: 10,
   },
   authButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000000',
+    fontWeight: "bold",
+    color: "#000000",
   },
   authLink: {
     marginTop: 20,
-
   },
-   // Form, new place
+
+  // new place detail form
   formContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   formTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 40,
-    color: '#333333',
-    textAlign: 'center',
+    color: "#333333",
+    textAlign: "center",
   },
   formInput: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    borderColor: '#DDDDDD',
+    borderColor: "#DDDDDD",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 15,
-    backgroundColor: '#F9F9F9',
-    color: '#000000',
+    backgroundColor: "#F9F9F9",
+    color: "#000000",
   },
   formButton: {
-    backgroundColor: '#E1F8D7',
+    backgroundColor: "#E1F8D7",
     paddingVertical: 15,
     borderRadius: 8,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
     marginTop: 10,
   },
   formButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000000',
+    fontWeight: "bold",
+    color: "#000000",
   },
 });
+
+export const appStyles = StyleSheet.create({
+  fieldContainer: {
+    marginBottom: 14,
+  },
+  fieldLabel: {
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+});
+
+export const inputStyle = {
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 10,
+  paddingHorizontal: 12,
+  paddingVertical: 12,
+  backgroundColor: "white",
+} as const;

@@ -12,7 +12,7 @@ import { auth, db } from "../../FirebaseConfig";
 import { styles } from "../styles";
 
 import {
-    collection,
+  collection,
   doc,
   getDoc,
   runTransaction,
@@ -88,10 +88,13 @@ export default function RegisterScreen() {
         //auth.currentUser.phoneNumber = phone;
         //auth.currentUser.password = password;
         updateProfile(user, { "displayName": uname});
-        const userDoc = doc(collection(db, username));
-        setDoc(userDoc, { phoneNumber: phone });
-        
-        setDoc(userDoc, {notifications: true});
+        const userDoc = doc(db, "users", user.uid);
+        await setDoc(
+          userDoc, 
+          { phoneNumber: phone,
+            notifications: true 
+          }
+        );
     } catch (e: any) {
       if (e?.code === "auth/email-already-in-use") {
         alert("Denne e-posten er allerede registrert.");

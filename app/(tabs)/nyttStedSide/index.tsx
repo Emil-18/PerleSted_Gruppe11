@@ -5,6 +5,7 @@ import { Camera } from "expo-camera";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const RESET_NEW_PLACE_KEY = "reset-new-place";
 const IS_WEB = Platform.OS === "web";
 const MAX = 10;
 
@@ -44,7 +45,33 @@ export default function NewPlaces() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { requestPermissionsIfNeeded(); }, [requestPermissionsIfNeeded]));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const checkReset = async () => {
+        try {
+          const flag = await AsyncStorage.getItem(RESET_NEW_PLACE_KEY);
+          if (!isActive) return;
+
+          if (flag === "1") {
+            setImages([]);
+            setRequesting(false);
+
+            await AsyncStorage.removeItem(RESET_NEW_PLACE_KEY);
+          }
+        } catch (e) {
+          console.log("Failed to check reset flag", e);
+        }
+      };
+
+      checkReset();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
 
   const pickFromGallery = async () => {
@@ -69,7 +96,7 @@ export default function NewPlaces() {
 
   const takePhoto = async () => {
     if (IS_WEB) {
-      Alert.alert("Not available on web", "Use the gallery button (it will also open the camera on mobile browsers).");
+      Alert.alert("Not available on web", "Use the gallery button.");
       return;
     }
     if (images.length >= MAX) return Alert.alert("Limit reached", `Max ${MAX} photos.`);
@@ -96,7 +123,7 @@ export default function NewPlaces() {
         {images.length > 0 && (
           <Pressable
             onPress={() =>
-              router.push({ pathname: "/newPlaces/details", params: { images: JSON.stringify(images) } })
+              router.push({ pathname: "/nyttStedSide/details", params: { images: JSON.stringify(images) } })
             }
             style={{ paddingHorizontal: 14, paddingVertical: 10, backgroundColor: "#2563eb", borderRadius: 10 }}
           >
@@ -157,7 +184,6 @@ export default function NewPlaces() {
         )}
       </View>
 
-      {/* Hidden web file input */}
       {IS_WEB && (
         <input
           ref={fileInputRef}

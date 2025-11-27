@@ -7,7 +7,7 @@ import {
   Image,
 } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collectionGroup, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/FirebaseConfig";
 
 type Post = {
@@ -19,14 +19,14 @@ type Post = {
   imageUrl?: string;
 };
 
-export default function PostsMapScreen() {
+export default function NativePostsMapScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   const defaultCenter = { latitude: 59.9139, longitude: 10.7522 };
 
   useEffect(() => {
-    const ref = collection(db, "posts");
+    const ref = collectionGroup(db, "posts");
 
     const unsub = onSnapshot(ref, (snapshot) => {
       const next: Post[] = [];
