@@ -183,7 +183,7 @@ export default function NewPlaceDetails() {
       const imageUrls = await Promise.all(
         assets.map((a, i) => {
           const ext = extFrom(a);
-          const path = `users/${user.uid}/posts/${postId}/image_${i}.${ext}`;
+          const path = `users/${user.uid}/posts/${postId}/image_${i}.jpg`;
           return uploadImageAsync({ asset: a, path });
         })
       );

@@ -5,12 +5,12 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  Image,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Image } from "expo-image"; // 👈 viktig for web
 import { db } from "../../../FirebaseConfig";
 
 type Post = {
@@ -30,7 +30,10 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function PearlDetailScreen() {
   const router = useRouter();
-  const { id, uid } = useLocalSearchParams<{ id: string; uid: string }>();
+
+  const params = useLocalSearchParams();
+  const id = Array.isArray(params.id) ? params.id[0] : (params.id as string | undefined);
+  const uid = Array.isArray(params.uid) ? params.uid[0] : (params.uid as string | undefined);
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,18 +41,25 @@ export default function PearlDetailScreen() {
 
   useEffect(() => {
     if (!id || !uid) {
+      console.log("Mangler id eller uid i route params:", { id, uid });
       setLoading(false);
       return;
     }
 
     const ref = doc(db, "users", uid, "posts", id);
+    console.log("Lytter på dokument:", `users/${uid}/posts/${id}`);
+
     const unsub = onSnapshot(
       ref,
       (snap) => {
         if (!snap.exists()) {
+          console.log("Post finnes ikke");
           setPost(null);
         } else {
-          setPost(snap.data() as Post);
+          const data = snap.data() as Post;
+          console.log("POST SNAP DATA:", data);
+          console.log("IMAGE URLS:", data.imageUrls);
+          setPost(data);
         }
         setLoading(false);
       },
@@ -105,7 +115,7 @@ export default function PearlDetailScreen() {
                 key={index}
                 source={{ uri }}
                 style={{ width: SCREEN_WIDTH, height: 280 }}
-                resizeMode="cover"
+                contentFit="cover"
               />
             ))}
           </ScrollView>
@@ -123,7 +133,6 @@ export default function PearlDetailScreen() {
           </View>
         )}
 
-        {/* små prikker for hvilken side du er på */}
         {post.imageUrls && post.imageUrls.length > 1 && (
           <View
             style={{

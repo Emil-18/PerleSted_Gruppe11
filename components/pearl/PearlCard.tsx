@@ -1,9 +1,7 @@
 import { Image } from "expo-image";
 import React, { memo, useMemo } from "react";
-import { ImageSourcePropType, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { ImageSourcePropType, Text, TouchableOpacity, View } from "react-native";
 import { styles } from "../../app/styles";
-
-
 
 type PearlCardProps = {
   id: string;
@@ -20,13 +18,13 @@ const PearlCardComponent: React.FC<PearlCardProps> = ({
   imageLocal,
   onPress,
 }) => {
-    const source = useMemo(
-        () => (imageLocal ? imageLocal : imageUrl ? { uri: imageUrl } : null),
-        [imageLocal, imageUrl]
-  );
+  const source = useMemo(() => {
+    if (imageLocal) return imageLocal;
+    if (imageUrl) return { uri: imageUrl };
+    return null;
+  }, [imageLocal, imageUrl]);
 
-
-  const displayTitle = (title || "").trim() || "FredikstenFesning";
+  const displayTitle = (title || "").trim() || "FredikstenFestning";
 
   return (
     <TouchableOpacity
@@ -38,7 +36,26 @@ const PearlCardComponent: React.FC<PearlCardProps> = ({
       testID={`pearl-card-${id}`}
     >
       <View style={styles.PearlImageWrap}>
-        <Image source={source} style={styles.PearlImage} contentFit="cover" />
+        {source ? (
+          <Image
+            source={source}
+            style={styles.PearlImage}
+            contentFit="cover"
+          />
+        ) : (
+          <View
+            style={[
+              styles.PearlImage,
+              {
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#e5e7eb",
+              },
+            ]}
+          >
+            <Text style={{ color: "#9ca3af", fontSize: 12 }}>No image</Text>
+          </View>
+        )}
       </View>
 
       <Text style={styles.pearlTitle} numberOfLines={1}>
@@ -49,4 +66,3 @@ const PearlCardComponent: React.FC<PearlCardProps> = ({
 };
 
 export const PearlCard = memo(PearlCardComponent);
-
