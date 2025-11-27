@@ -2,6 +2,7 @@ import Button from "@/components/Button";
 import React from "react";
 import { View } from "react-native";
 import { styles } from "../styles";
+import Feed from "./feedSide/feed";
 
 interface Pearl {
   id: string;
@@ -27,7 +28,8 @@ const home = () => {
         path="/settings"
         buttonStyle={styles.profileButton}
         buttonTextStyle={styles.profileText}
-      />
+          />
+      <Feed></Feed>
     </View>
   );
 };
