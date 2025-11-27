@@ -1,109 +1,247 @@
 import { Image } from "expo-image";
-import { Pressable, Switch, Text, TextInput, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Pressable, Switch, Text, TextInput, View, Alert } from "react-native";
 
 import { SettingCard } from "../../components/settings/SettingCard";
-
 import image from "../../assets/beluga.png";
 import Button from "../../components/Button";
 import { styles } from "../styles";
 import { auth, db } from "../../FirebaseConfig";
-import { useState } from "react";
-import { updateCurrentUser, updatePassword, updatePhoneNumber, updateProfile } from "firebase/auth";
-import { Firestore, collection, doc, getDoc, runTransaction, setDoc } from "firebase/firestore";
 
-
+import {
+  updateProfile,
+  updatePassword,
+  updateEmail,
+  User,
+} from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  setDoc,
+} from "firebase/firestore";
 
 const Settings = () => {
-    const userDoc = doc(collection(db, auth.currentUser?.displayName));
-    const [email, setEmail] = useState("");
-    const [userName, setUserName] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [phone, setPhone] = useState("");
-    const [userNotifications, setUserNotifications] = useState(getDoc(userDoc);
-    //const [userNotifications, setUserNotifications] = useState(false);
+  const user = auth.currentUser as User | null;
 
-    const onSave = function () {
-        
-        
-        
-        let infoToUpdate = {};
-        //const unameRef = doc(db, "usernames", userName);
-        //const unameSnap = getDoc(unameRef);
-        auth.currentUser?.phoneNumber
-        //if (unameSnap.exists()) {
-            //alert("Epost addressenn er allerede tatt.");
-            //return;
-        //}
-        if (userName && (userName?.length < 3 || userName.length > 20)) {
-            alert("Brukernavnet m� vere mellom 3 og 20 tegn");
-            return;
+  // Hvis ingen er logget inn:
+  if (!user) {
+    return (
+      <View style={styles.settingsContainer}>
+        <Text>Ingen bruker er logget inn.</Text>
+      </View>
+    );
+  }
+
+  // Firestore-dokument: /users/{uid}
+  const userDoc = doc(db, "users", user.uid);
+
+  const [email, setEmail] = useState(user.email ?? "");
+  const [userName, setUserName] = useState(user.displayName ?? "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [userNotifications, setUserNotifications] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Hent ekstra info fra Firestore (phoneNumber, notifications)
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const snap = await getDoc(userDoc);
+        if (!isMounted) return;
+
+        if (snap.exists()) {
+          const data = snap.data() as any;
+          if (data.phoneNumber) {
+            setPhone(String(data.phoneNumber));
+          }
+          if (typeof data.notifications === "boolean") {
+            setUserNotifications(data.notifications);
+          }
         }
-        infoToUpdate["displayName"] = userName ? userName : auth.currentUser?.displayName;
-        if (email && !(email?.includes("@") && email.includes("."))) {
-            alert("E-post addressen er ugyldig, "+email);
-            return;
+      } catch (e) {
+        console.log("Feil ved henting av bruker-doc:", e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userDoc]);
+
+  const onSave = async () => {
+    try {
+      // --- Validering ---
+      if (userName && (userName.length < 3 || userName.length > 20)) {
+        Alert.alert("Feil", "Brukernavnet må være mellom 3 og 20 tegn");
+        return;
+      }
+
+      if (email && !(email.includes("@") && email.includes("."))) {
+        Alert.alert("Feil", "E-postadressen er ugyldig: " + email);
+        return;
+      }
+
+      if (password) {
+        if (password !== confirmPassword) {
+          Alert.alert("Feil", "Passordene er ikke like");
+          return;
         }
-        infoToUpdate["email"] = email ? email : auth.currentUser?.email;
-        if (password && password != confirmPassword) {
-            alert("Passordene er ikke like");
-            return;
+        if (password.length <= 3) {
+          Alert.alert("Feil", "Passordet må være lengre enn tre tegn");
+          return;
         }
-        if (password && password.length <= 3) {
-            alert("Passordet m� vere lengere en tre tegn");
-            return;
-        }
-        if (phone && !(phone.match("^[0-9]{8}$"))) {
-            alert("Ugyldig telefon nummer");
-            return;
-        }
-        infoToUpdate["phoneNumber"] = phone ? phone : auth.currentUser?.phoneNumber
-        updateProfile(auth.currentUser, infoToUpdate);
-        if (password) {
-            updatePassword(auth.currentUser, password);
-        }
-        if (phone) {
-            setDoc(userDoc, {phoneNumber: phone})
-        }
-        setDoc(userDoc, { notifications: userNotifications });
-        //auth.currentUser.phoneNumber = phone;
-        //auth.currentUser.displayName = userName;
-        //auth.currentUser.notifications = userNotifications;
+      }
+
+      if (phone && !phone.match(/^[0-9]{8}$/)) {
+        Alert.alert("Feil", "Ugyldig telefonnummer (må være 8 siffer)");
+        return;
+      }
+
+      // --- Oppdater Firebase Auth ---
+
+      // displayName
+      if (userName && userName !== user.displayName) {
+        await updateProfile(user, { displayName: userName });
+      }
+
+      // email
+      if (email && email !== user.email) {
+        await updateEmail(user, email);
+      }
+
+      // password
+      if (password) {
+        await updatePassword(user, password);
+      }
+
+      // --- Oppdater Firestore (phoneNumber + notifications) ---
+      await setDoc(
+        userDoc,
+        {
+          username: userName || user.displayName || null,
+          phoneNumber: phone || null,
+          notifications: userNotifications,
+        },
+        { merge: true }
+      );
+
+      Alert.alert("Lagret", "Innstillingene dine er oppdatert.");
+    } catch (e: any) {
+      console.log("Feil ved lagring:", e);
+      Alert.alert("Feil", e?.message ?? "Noe gikk galt ved lagring.");
     }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.settingsContainer}>
+        <Text>Laster innstillinger...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.settingsContainer}>
-      <Image
-        source={"dummyImmageurl" ? { uri: "dummyImmageURL" } : "dummyImmageURL"}
-        style={styles.profileImage}
-      />
+      {/* Bruk statisk bilde fra assets */}
+      <Image source={image} style={styles.profileImage} />
+
       <Button
         text="Endre bilde"
         path="./profile"
         buttonStyle={styles.settingsBigButton}
         buttonTextStyle={styles.text}
       />
-          <SettingCard
-              setting="Brukernavn"
-              settingInfo={auth.currentUser?.displayName}
-              btnText="Endre"
-              settingComponent=<TextInput onChangeText={setUserName}></TextInput>
+
+      <SettingCard
+        setting="Brukernavn"
+        settingInfo={userName ?? "Ingen brukernavn"}
+        btnText="Endre"
+        settingComponent={
+          <TextInput
+            onChangeText={setUserName}
+            value={userName}
+            style={{ borderWidth: 1, padding: 4 }}
+          />
+        }
       />
-          <SettingCard setting="Passord" settingInfo="********" btnText="Endre" settingComponent=<TextInput onChangeText={setPassword} secureTextEntry></TextInput>/>
-          <SettingCard setting = "gjenta passord" settingInfo = "********" btnText = "" settingComponent = <TextInput secureTextEntry onChangeText = {setConfirmPassword} value = {confirmPassword}></TextInput>/>
-      <SettingCard setting="E-post" settingInfo={auth.currentUser?.email} btnText="Endre" settingComponent = <TextInput keyboardType = "email-address" onChangeText = {setEmail}></TextInput>/>
+
+      <SettingCard
+        setting="Passord"
+        settingInfo="********"
+        btnText="Endre"
+        settingComponent={
+          <TextInput
+            onChangeText={setPassword}
+            secureTextEntry
+            value={password}
+            style={{ borderWidth: 1, padding: 4 }}
+          />
+        }
+      />
+
+      <SettingCard
+        setting="Gjenta passord"
+        settingInfo="********"
+        btnText=""
+        settingComponent={
+          <TextInput
+            secureTextEntry
+            onChangeText={setConfirmPassword}
+            value={confirmPassword}
+            style={{ borderWidth: 1, padding: 4 }}
+          />
+        }
+      />
+
+      <SettingCard
+        setting="E-post"
+        settingInfo={user.email ?? "Ingen e-post"}
+        btnText="Endre"
+        settingComponent={
+          <TextInput
+            keyboardType="email-address"
+            onChangeText={setEmail}
+            value={email}
+            style={{ borderWidth: 1, padding: 4 }}
+          />
+        }
+      />
+
       <SettingCard
         setting="Telefonnummer"
-              settingInfo={getDoc(userDoc, "phoneNumber")}
+        settingInfo={phone || "Ingen telefon lagret"}
         btnText="Endre"
-        settingComponent = <TextInput keyboardType = "number-pad" onChangeText = {setPhone}></TextInput>
+        settingComponent={
+          <TextInput
+            keyboardType="number-pad"
+            onChangeText={setPhone}
+            value={phone}
+            style={{ borderWidth: 1, padding: 4 }}
+          />
+        }
       />
+
       <SettingCard
         setting="Varsler"
-        settingInfo= " "
+        settingInfo={userNotifications ? "På" : "Av"}
         btnText="Endre"
-              settingComponent=<Switch onValueChange={ setUserNotifications} value = {userNotifications}></Switch>
+        settingComponent={
+          <Switch
+            onValueChange={setUserNotifications}
+            value={userNotifications}
           />
-          <Pressable onPress={ onSave} accessibilityRole = "button"><Text>lagre</Text></Pressable>
+        }
+      />
+
+      <Pressable onPress={onSave} accessibilityRole="button">
+        <Text style={{ marginTop: 16 }}>Lagre</Text>
+      </Pressable>
+
       <Button
         text="Logg ut"
         path=".././"
