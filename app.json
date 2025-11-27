@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.Perlested"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +20,11 @@
         "monochromeImage": "./assets/xp.jpg"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.anonymous.Perlested"
     },
     "web": {
       "output": "static",
@@ -28,9 +33,9 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",   
+        "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/beluga.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -38,20 +43,21 @@
             "backgroundColor": "#000000"
           }
         }
-      
       ],
       [
         "expo-image-picker",
-      {
-        "photosPermission": "Allow $(PRODUCT_NAME) to access your photo",
-        "cameraPermission": "Allow §(PRODUCT NAME) to access your camera"
-      }
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photo",
+          "cameraPermission": "Allow §(PRODUCT NAME) to access your camera"
+        }
+      ],
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
+        }
+      ]
     ]
-      
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    }
   }
 }

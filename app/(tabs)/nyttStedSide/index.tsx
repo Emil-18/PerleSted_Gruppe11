@@ -5,6 +5,7 @@ import { Camera } from "expo-camera";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const RESET_NEW_PLACE_KEY = "reset-new-place";
 const IS_WEB = Platform.OS === "web";
 const MAX = 10;
 
@@ -25,9 +26,9 @@ export default function NewPlaces() {
     });
   };
 
-  // --- Permissions (native only) ---
+  
   const requestPermissionsIfNeeded = useCallback(async () => {
-    if (IS_WEB) return; // browser will handle permissions
+    if (IS_WEB) return;
     try {
       const hasRequested = await AsyncStorage.getItem("newPlaces_permissions_requested_v1");
       if (hasRequested) return;
@@ -44,30 +45,60 @@ export default function NewPlaces() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { requestPermissionsIfNeeded(); }, [requestPermissionsIfNeeded]));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-  // --- Gallery (works on all) ---
+      const checkReset = async () => {
+        try {
+          const flag = await AsyncStorage.getItem(RESET_NEW_PLACE_KEY);
+          if (!isActive) return;
+
+          if (flag === "1") {
+            // Tøm lokal state
+            setImages([]);
+            setRequesting(false);
+
+            // Fjern flagget så dette bare skjer én gang
+            await AsyncStorage.removeItem(RESET_NEW_PLACE_KEY);
+          }
+        } catch (e) {
+          console.log("Failed to check reset flag", e);
+        }
+      };
+
+      checkReset();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
+
   const pickFromGallery = async () => {
     if (IS_WEB) {
-      // Use a hidden <input multiple> for best UX on web
       fileInputRef.current?.click();
       return;
     }
+  
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.9,
-      allowsEditing: false,
       allowsMultipleSelection: true,
+      quality: 0.9,
     });
-    if (!res.canceled && res.assets?.length) {
-      addUris(res.assets.map(a => a.uri).filter(Boolean) as string[]);
+  
+    if (!res.canceled) {
+      
+      const uris = res.assets.map(a => a.uri);
+      addUris(uris);
     }
   };
 
-  // --- Camera (native only; web fallback below) ---
+
   const takePhoto = async () => {
     if (IS_WEB) {
-      Alert.alert("Not available on web", "Use the gallery button (it will also open the camera on mobile browsers).");
+      Alert.alert("Not available on web", "Use the gallery button.");
       return;
     }
     if (images.length >= MAX) return Alert.alert("Limit reached", `Max ${MAX} photos.`);
@@ -79,12 +110,11 @@ export default function NewPlaces() {
     if (!res.canceled && res.assets?.length) addUris([res.assets[0].uri]);
   };
 
-  // --- Web-only file input handlers ---
   const onWebFilesSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const files = Array.from(e.target.files ?? []);
     const uris = files.map(f => URL.createObjectURL(f));
     addUris(uris);
-    // clear so picking same file again still triggers change
+    
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -95,7 +125,7 @@ export default function NewPlaces() {
         {images.length > 0 && (
           <Pressable
             onPress={() =>
-              router.push({ pathname: "/newPlaces/details", params: { images: JSON.stringify(images) } })
+              router.push({ pathname: "/nyttStedSide/details", params: { images: JSON.stringify(images) } })
             }
             style={{ paddingHorizontal: 14, paddingVertical: 10, backgroundColor: "#2563eb", borderRadius: 10 }}
           >
@@ -124,7 +154,7 @@ export default function NewPlaces() {
         </View>
       ) : (
         <View style={{ width: "100%", aspectRatio: 4/3, borderRadius: 12, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center", borderColor: "#ddd" }}>
-          <Text style={{ opacity: 0.6 }}>No photos — choose or take up to 10</Text>
+          <Text style={{ opacity: 0.6 }}>No photos — choose from galler or take a photo</Text>
         </View>
       )}
 
@@ -158,7 +188,6 @@ export default function NewPlaces() {
 
       {/* Hidden web file input */}
       {IS_WEB && (
-        // @ts-ignore - web only
         <input
           ref={fileInputRef}
           type="file"
@@ -171,9 +200,9 @@ export default function NewPlaces() {
 
       {images.length === 0 && (
         <Text style={{ fontSize: 12, opacity: 0.6 }}>
-          “Next” appears here after you select a photo.
         </Text>
       )}
     </View>
   );
 }
+

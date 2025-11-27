@@ -89,9 +89,13 @@ export default function RegisterScreen() {
         //auth.currentUser.password = password;
         updateProfile(user, { "displayName": uname});
         const userDoc = doc(db, "users", user.uid);
-        setDoc(userDoc, { phoneNumber: phone });
-        
-        setDoc(userDoc, {notifications: true});
+        await setDoc(
+          userDoc, 
+          { phoneNumber: phone,
+            notifications: true 
+          }
+        );
+
     } catch (e: any) {
       if (e?.code === "auth/email-already-in-use") {
         alert("Denne e-posten er allerede registrert.");
