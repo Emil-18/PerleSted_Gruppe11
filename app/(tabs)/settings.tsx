@@ -68,7 +68,7 @@ const Settings = () => {
     return () => {
       isMounted = false;
     };
-  }, [userDoc]);
+  }, [user.uid]);
 
   const onSave = async () => {
     // --- Validering ---
